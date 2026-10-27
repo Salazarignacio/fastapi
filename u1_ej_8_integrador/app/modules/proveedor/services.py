@@ -1,14 +1,20 @@
-from .schemas import ProveedorRead, ProveedorUpdate, ProveedorCreate
+from sqlmodel import Session
+from .models import ProveedorRead, ProveedorUpdate, ProveedorCreate
 from typing import Optional
+from fastapi import FastAPI, Depends, HTTPException, status
+from app.database import get_session
+
 
 
 db_proveedores: list[ProveedorRead] = []
 id_counter = 1
 
-def crear(data: ProveedorCreate) -> ProveedorRead:
+def crear(data: ProveedorCreate, session: Session) -> ProveedorRead:
     global id_counter
     nuevo = ProveedorRead(id=id_counter, **data.model_dump())
-    db_proveedores.append(nuevo)
+    session.add(nuevo)  
+    session.commit()
+    session.refresh(nuevo)
     id_counter += 1
     return nuevo
 
@@ -31,10 +37,12 @@ def actualizar_total(id: int, data: ProveedorRead) -> Optional[ProveedorRead]:
 
 def desactivar(id: int) -> Optional[ProveedorRead]:
     for index, p in enumerate(db_proveedores):
-        if p.id == id:
+        if p.id == id and p.activo:
             p_dict = p.model_dump()
             p_dict["activo"] = False
             proveedor_actualizado = ProveedorRead(**p_dict)
             db_proveedores[index] = proveedor_actualizado
             return proveedor_actualizado
+        else:
+            raise ValueError(f"Proveedor con id {id} no encontrado o ya desactivado")
     return None
