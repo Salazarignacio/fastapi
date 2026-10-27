@@ -1,0 +1,152 @@
+@baseUrl = http://127.0.0.1:8000
+
+### ==========================================
+### MÓDULO: PROVEEDORES
+### Ejecutar en orden: los ids (1 y 2) dependen de la creación previa
+### y el servidor reinicia la memoria al arrancar.
+### ==========================================
+
+### 1. Crear Proveedor (HU-01, 201 Created)
+POST {{baseUrl}}/proveedores/
+Content-Type: application/json
+
+{
+  "codigo": "PRV-01",
+  "razon_social": "Distribuidora Norte SA",
+  "cuit": "30712345678",
+  "email": "ventas@norte.com",
+  "telefono": "3411234567",
+  "activo": true
+}
+
+### 2. Crear Proveedor con código duplicado (HU-01, 409 Conflict - RN-02)
+POST {{baseUrl}}/proveedores/
+Content-Type: application/json
+
+{
+  "codigo": "PRV-01",
+  "razon_social": "Otro Proveedor SRL",
+  "cuit": "30798765432"
+}
+
+### 3. Crear Proveedor con código vacío (HU-01, 422 - RN-01)
+POST {{baseUrl}}/proveedores/
+Content-Type: application/json
+
+{
+  "codigo": "",
+  "razon_social": "Proveedor Sin Código",
+  "cuit": "30711111111"
+}
+
+### 4. Crear Proveedor con razón social muy corta (HU-01, 422 - RN-03)
+POST {{baseUrl}}/proveedores/
+Content-Type: application/json
+
+{
+  "codigo": "PRV-99",
+  "razon_social": "AB",
+  "cuit": "30711111111"
+}
+
+### 5. Crear Proveedor con CUIT demasiado corto (422)
+POST {{baseUrl}}/proveedores/
+Content-Type: application/json
+
+{
+  "codigo": "PRV-98",
+  "razon_social": "CUIT Corto SA",
+  "cuit": "123"
+}
+
+### 6. Crear segundo Proveedor (id 2, 201 Created)
+POST {{baseUrl}}/proveedores/
+Content-Type: application/json
+
+{
+  "codigo": "PRV-02",
+  "razon_social": "Ferretería Sur SRL",
+  "cuit": "30722222222"
+}
+
+### 7. Listar Proveedores con valores por defecto (HU-02, 200, máximo 10)
+GET {{baseUrl}}/proveedores/
+
+### 8. Listar solo activos (HU-02, activo=true)
+GET {{baseUrl}}/proveedores/?activo=true
+
+### 9. Listar solo inactivos (HU-02, activo=false)
+GET {{baseUrl}}/proveedores/?activo=false
+
+### 10. Listar con paginación (HU-02, skip y limit)
+GET {{baseUrl}}/proveedores/?skip=0&limit=1
+
+### 11. Listar con limit fuera de rango (HU-02, 422 - le=50)
+GET {{baseUrl}}/proveedores/?limit=51
+
+### 12. Listar con limit cero (HU-02, 422 - ge=1)
+GET {{baseUrl}}/proveedores/?limit=0
+
+### 13. Listar con skip negativo (HU-02, 422 - ge=0)
+GET {{baseUrl}}/proveedores/?skip=-1
+
+### 14. Detalle de Proveedor existente (HU-03, 200)
+GET {{baseUrl}}/proveedores/1
+
+### 15. Detalle de Proveedor inexistente (HU-03, 404 - RN-04)
+GET {{baseUrl}}/proveedores/99
+
+### 16. Detalle con id inválido (422 - gt=0)
+GET {{baseUrl}}/proveedores/0
+
+### 17. Actualizar Proveedor (HU-04, reemplazo total, 200)
+PUT {{baseUrl}}/proveedores/1
+Content-Type: application/json
+
+{
+  "codigo": "PRV-01",
+  "razon_social": "Distribuidora Norte Actualizada SA",
+  "cuit": "30712345678",
+  "email": "nuevo@norte.com",
+  "telefono": "3417654321",
+  "activo": true
+}
+
+### 18. Actualizar Proveedor inexistente (HU-04, 404 - RN-04)
+PUT {{baseUrl}}/proveedores/99
+Content-Type: application/json
+
+{
+  "codigo": "PRV-50",
+  "razon_social": "No Existe SA",
+  "cuit": "30733333333"
+}
+
+### 19. Actualizar Proveedor con código de otro proveedor (HU-04, 409 - RN-02)
+PUT {{baseUrl}}/proveedores/1
+Content-Type: application/json
+
+{
+  "codigo": "PRV-02",
+  "razon_social": "Distribuidora Norte SA",
+  "cuit": "30712345678"
+}
+
+### 20. Actualizar Proveedor con body inválido (422 - RN-01 / RN-03)
+PUT {{baseUrl}}/proveedores/1
+Content-Type: application/json
+
+{
+  "codigo": "PRV-01",
+  "razon_social": "AB",
+  "cuit": "30712345678"
+}
+
+### 21. Desactivar Proveedor (HU-05, borrado lógico, 200)
+PUT {{baseUrl}}/proveedores/2/desactivar
+
+### 22. Desactivar Proveedor ya desactivado (HU-05, 409 - RN-05)
+PUT {{baseUrl}}/proveedores/2/desactivar
+
+### 23. Desactivar Proveedor inexistente (HU-05, 404 - RN-04)
+PUT {{baseUrl}}/proveedores/99/desactivar
