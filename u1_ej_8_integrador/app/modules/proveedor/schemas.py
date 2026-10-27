@@ -1,8 +1,8 @@
-from pydantic import BaseModel, Field
+from sqlmodel import SQLModel, Field
 from typing import Optional
 
 
-class ProveedorBase(BaseModel):
+class ProveedorBase(SQLModel):
     codigo: str = Field(min_length=1)
     razon_social: str = Field(min_length=3)
     cuit: str = Field(min_length=11, max_length=15)
@@ -19,7 +19,7 @@ class ProveedorRead(ProveedorBase):
     id: int
 
 
-class ProveedorUpdate(BaseModel):
+class ProveedorUpdate(SQLModel):
     codigo: Optional[str] | None = None
     razon_social: Optional[str] | None = None
     cuit: Optional[str] | None = None
