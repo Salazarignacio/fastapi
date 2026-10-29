@@ -1,7 +1,9 @@
 from typing import List
 
-from fastapi import APIRouter, HTTPException, Path, Query, status
+from fastapi import APIRouter, HTTPException, Path, Query, status, Depends
 from . import schemas, services
+from app.database import get_session
+from sqlmodel import Session
 
 router = APIRouter(prefix="/proveedores", tags=["Proveedores"])
 
@@ -9,20 +11,20 @@ router = APIRouter(prefix="/proveedores", tags=["Proveedores"])
 @router.post(
     "/", response_model=schemas.ProveedorRead, status_code=status.HTTP_201_CREATED
 )
-def alta_proveedor(proveedor: schemas.ProveedorCreate):
-    if services.existe_codigo(proveedor.codigo):
+def alta_proveedor(proveedor: schemas.ProveedorCreate, session: Session = Depends(get_session)):
+    if services.existe_codigo(proveedor.codigo, session):
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail=f"Ya existe un proveedor con el código {proveedor.codigo}",
         )
-    return services.crear(proveedor)
+    return services.crear(proveedor, session)
 
 
 @router.get(
     "/", response_model=List[schemas.ProveedorRead], status_code=status.HTTP_200_OK
 )
-def listar_proveedores(skip: int = Query(0, ge=0), limit: int = Query(10, ge=1, le=50), activo: bool | None = Query(None)):
-    return services.obtener_todos(skip, limit, activo)
+def listar_proveedores(skip: int = Query(0, ge=0), limit: int = Query(10, ge=1, le=50), activo: bool | None = Query(None), session: Session = Depends(get_session)):
+    return services.obtener_todos(skip, limit, activo, session)
 
 
 @router.get(

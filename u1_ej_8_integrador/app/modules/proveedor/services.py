@@ -1,8 +1,8 @@
-from sqlmodel import Session
-from .models import ProveedorRead, ProveedorUpdate, ProveedorCreate
+from sqlmodel import Session, select
+from .schemas import ProveedorRead, ProveedorUpdate, ProveedorCreate
 from typing import Optional
-from fastapi import FastAPI, Depends, HTTPException, status
 from app.database import get_session
+from .models import Proveedor
 
 
 
@@ -10,23 +10,24 @@ db_proveedores: list[ProveedorRead] = []
 id_counter = 1
 
 def crear(data: ProveedorCreate, session: Session) -> ProveedorRead:
-    global id_counter
-    nuevo = ProveedorRead(id=id_counter, **data.model_dump())
+    nuevo = Proveedor(**data.model_dump())
     session.add(nuevo)  
     session.commit()
     session.refresh(nuevo)
-    id_counter += 1
+
     return nuevo
 
 def existe_codigo(codigo: str, excluir_id: int | None = None) -> bool:
     return any(p.codigo == codigo and p.id != excluir_id for p in db_proveedores)
 
-def obtener_todos(skip: int, limit: int, activo: bool | None) -> list[ProveedorRead]:
+def obtener_todos(skip: int, limit: int, activo: bool | None, session: Session) -> list[ProveedorRead]:
+    proveedores_elegidos = select(Proveedor)
     if activo is not None:
-        proveedores_elegidos = list(filter(lambda p: p.activo == activo, db_proveedores))
-    else:
-        proveedores_elegidos = db_proveedores
-    return proveedores_elegidos[skip: skip + limit]
+        proveedores_elegidos = proveedores_elegidos.where(Proveedor.activo == activo)
+    proveedores_elegidos = proveedores_elegidos.offset(skip).limit(limit)
+    result = session.exec(proveedores_elegidos)
+
+    return result.all()
 
 def obtener_por_id(id: int) -> ProveedorRead | None:
     for p in db_proveedores:
