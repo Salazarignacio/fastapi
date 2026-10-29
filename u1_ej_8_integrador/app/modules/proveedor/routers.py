@@ -30,8 +30,8 @@ def listar_proveedores(skip: int = Query(0, ge=0), limit: int = Query(10, ge=1, 
 @router.get(
     "/{id}", response_model=schemas.ProveedorRead, status_code=status.HTTP_200_OK
 )
-def obtener_proveedor(id: int = Path(..., gt=0)):
-    proveedor = services.obtener_por_id(id)
+def obtener_proveedor(id: int = Path(..., gt=0), session: Session = Depends(get_session)):
+    proveedor = services.obtener_por_id(id, session)
     if proveedor is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Proveedor no encontrado"
@@ -41,8 +41,8 @@ def obtener_proveedor(id: int = Path(..., gt=0)):
 @router.put(
     "/{id}", response_model=schemas.ProveedorRead, status_code=status.HTTP_200_OK
 )
-def actualizar_proveedor(proveedor: schemas.ProveedorCreate, id: int = Path(..., gt=0)):
-    if services.obtener_por_id(id) is None:
+def actualizar_proveedor(proveedor: schemas.ProveedorCreate, id: int = Path(..., gt=0), session: Session = Depends(get_session)):
+    if services.obtener_por_id(id, session) is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Proveedor no encontrado"
         )
@@ -51,10 +51,10 @@ def actualizar_proveedor(proveedor: schemas.ProveedorCreate, id: int = Path(...,
             status_code=status.HTTP_409_CONFLICT,
             detail=f"Ya existe un proveedor con el código {proveedor.codigo}",
         )
-    return services.actualizar_total(id, proveedor)
+    return services.actualizar_total(id, proveedor, session)
 
 @router.put("/{id}/desactivar", response_model=schemas.ProveedorRead, status_code=status.HTTP_200_OK)
-def borrado_logico(id: int = Path(..., gt=0)):
+def borrado_logico(id: int = Path(..., gt=0), session: Session = Depends(get_session)):
     proveedor = services.obtener_por_id(id)
     if proveedor is None:
         raise HTTPException(
@@ -65,4 +65,4 @@ def borrado_logico(id: int = Path(..., gt=0)):
             status_code=status.HTTP_409_CONFLICT,
             detail="El proveedor ya está desactivado",
         )
-    return services.desactivar(id)
+    return services.desactivar(id, session)
