@@ -55,7 +55,7 @@ def actualizar_proveedor(proveedor: schemas.ProveedorCreate, id: int = Path(...,
 
 @router.put("/{id}/desactivar", response_model=schemas.ProveedorRead, status_code=status.HTTP_200_OK)
 def borrado_logico(id: int = Path(..., gt=0), session: Session = Depends(get_session)):
-    proveedor = services.obtener_por_id(id)
+    proveedor = services.obtener_por_id(id, session)
     if proveedor is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Proveedor no encontrado"
