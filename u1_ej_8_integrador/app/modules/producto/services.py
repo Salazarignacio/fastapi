@@ -4,13 +4,12 @@ from sqlmodel import Session, select
 from .models import Producto
 from .schemas import ProductoCreate, ProductoRead
 
-# Simulamos que la BD guarda objetos tipo ProductoRead (con ID asignado)
-db_productos: List[ProductoRead] = []
-id_counter = 1
-
 
 def crear(data: ProductoCreate, session: Session) -> ProductoRead:
     nuevo = Producto(**data.model_dump())
+    producto = select(Producto).where(Producto.nombre == data.nombre)
+    if session.exec(producto).first():
+        raise ValueError("Producto ya existe")
     session.add(nuevo)
     session.commit()
     session.refresh(nuevo)
@@ -24,12 +23,12 @@ def obtener_todos(skip: int, limit: int, session: Session) -> List[ProductoRead]
 
 def obtener_por_id(id: int, session: Session) -> Optional[ProductoRead]:
     producto = session.get(Producto, id)
-    if producto is None:
-        raise ValueError("Producto no encontrado")
     return producto
 
 def actualizar_total(id: int, data: ProductoCreate, session: Session) -> Optional[ProductoRead]:
     producto = obtener_por_id(id, session)  
+    if producto is None:
+        return None
     update_data = data.model_dump(exclude_unset=True)
     for field, value in update_data.items():
         setattr(producto, field, value)
@@ -42,6 +41,8 @@ def actualizar_total(id: int, data: ProductoCreate, session: Session) -> Optiona
 def desactivar(id: int, session: Session) -> Optional[ProductoRead]:
     # Borrado lógico: Solo altera el estado 'activo'
     producto = obtener_por_id(id, session)
+    if producto is None:
+        return None
     producto.activo = False
     session.add(producto)
     session.commit()
@@ -51,6 +52,8 @@ def desactivar(id: int, session: Session) -> Optional[ProductoRead]:
 
 def obtener_estado_stock(id: int, session: Session) -> Optional[dict]:
     producto = obtener_por_id(id, session)
+    if producto is None:
+        return None
 
     # La lógica de negocio vive aquí
     alerta_stock = producto.stock < producto.stock_minimo

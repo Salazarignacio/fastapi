@@ -1,13 +1,13 @@
-from pydantic import BaseModel, Field
-from typing import Optional
+from pydantic import BaseModel, Field, StringConstraints
+from typing import Annotated, Optional
 
 from sqlmodel import SQLModel
 
 
 class ProductoBase(SQLModel):
-    nombre: str = Field(..., example="Silla de Oficina")
+    nombre: str = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
     categoria: str = Field(..., pattern=r"^[A-Z]{3}-\d{2}$", example="MUE-01")
-    precio: float = Field(gt=0, example=150.50)
+    precio: float = Field(ge=0, example=150.50)
     stock: int = Field(ge=0, example=20)
     stock_minimo: int = Field(ge=0, example=5)
     activo: bool = True
