@@ -1,0 +1,795 @@
+{
+  "info": {
+    "name": "TPI Unidad 5 · Productos (FastAPI + PostgreSQL)",
+    "description": "Pruebas del CRUD de productos (RN-11). Ejecutar en orden con el Collection Runner.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "MÓDULO PRODUCTOS · Pruebas del CRUD contra PostgreSQL (RN-11)",
+      "item": []
+    },
+    {
+      "name": "POST /productos/  ·  Alta",
+      "item": [
+        {
+          "name": "1. Crear producto válido  → 201 Created",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/productos/",
+              "host": [
+                "{{baseUrl}}/productos/"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Silla Ergonómica {{$timestamp}}\",\n  \"categoria\": \"MUE-01\",\n  \"precio\": 250.00,\n  \"stock\": 10,\n  \"stock_minimo\": 5,\n  \"activo\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\", () => pm.response.to.have.status(201));",
+                  "const b = pm.response.json();",
+                  "pm.collectionVariables.set(\"crearSilla_id\", b.id);",
+                  "pm.collectionVariables.set(\"crearSilla_nombre\", b.nombre);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2. Crear segundo producto válido (precio 0 permitido, RN-03)  → 201 Created",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/productos/",
+              "host": [
+                "{{baseUrl}}/productos/"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Mesa de Reunión {{$timestamp}}\",\n  \"categoria\": \"MUE-01\",\n  \"precio\": 0,\n  \"stock\": 3,\n  \"stock_minimo\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\", () => pm.response.to.have.status(201));",
+                  "const b = pm.response.json();",
+                  "pm.collectionVariables.set(\"crearMesa_id\", b.id);",
+                  "pm.collectionVariables.set(\"crearMesa_nombre\", b.nombre);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "3. Nombre duplicado (mismo nombre que el 1)  → 409 Conflict (HU-02)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/productos/",
+              "host": [
+                "{{baseUrl}}/productos/"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"{{crearSilla_nombre}}\",\n  \"categoria\": \"MUE-01\",\n  \"precio\": 100,\n  \"stock\": 1,\n  \"stock_minimo\": 0\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 409\", () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4. Nombre vacío  → 422 Unprocessable Entity (RN-02)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/productos/",
+              "host": [
+                "{{baseUrl}}/productos/"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"\",\n  \"categoria\": \"MUE-01\",\n  \"precio\": 100,\n  \"stock\": 1,\n  \"stock_minimo\": 0\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 422\", () => pm.response.to.have.status(422));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "5. Nombre con solo espacios  → 422 (RN-02)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/productos/",
+              "host": [
+                "{{baseUrl}}/productos/"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"     \",\n  \"categoria\": \"MUE-01\",\n  \"precio\": 100,\n  \"stock\": 1,\n  \"stock_minimo\": 0\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 422\", () => pm.response.to.have.status(422));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "6. Sin nombre (campo obligatorio)  → 422 (RN-02)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/productos/",
+              "host": [
+                "{{baseUrl}}/productos/"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"categoria\": \"MUE-01\",\n  \"precio\": 100,\n  \"stock\": 1,\n  \"stock_minimo\": 0\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 422\", () => pm.response.to.have.status(422));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "7. Precio negativo  → 422 (RN-03)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/productos/",
+              "host": [
+                "{{baseUrl}}/productos/"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Producto precio negativo\",\n  \"categoria\": \"MUE-01\",\n  \"precio\": -10,\n  \"stock\": 1,\n  \"stock_minimo\": 0\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 422\", () => pm.response.to.have.status(422));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "8. Stock negativo y categoría con formato inválido  → 422 (detalle de ambos campos)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/productos/",
+              "host": [
+                "{{baseUrl}}/productos/"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Producto inválido\",\n  \"categoria\": \"muebles\",\n  \"precio\": 10,\n  \"stock\": -1,\n  \"stock_minimo\": 0\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 422\", () => pm.response.to.have.status(422));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "GET /productos/  ·  Listado",
+      "item": [
+        {
+          "name": "9. Listar con paginación  → 200 OK",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/productos/?skip=0&limit=5",
+              "host": [
+                "{{baseUrl}}/productos/?skip=0&limit=5"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "10. limit por encima del máximo (50)  → 422",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/productos/?limit=51",
+              "host": [
+                "{{baseUrl}}/productos/?limit=51"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 422\", () => pm.response.to.have.status(422));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "11. skip negativo  → 422",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/productos/?skip=-1",
+              "host": [
+                "{{baseUrl}}/productos/?skip=-1"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 422\", () => pm.response.to.have.status(422));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "GET /productos/{id}  ·  Detalle",
+      "item": [
+        {
+          "name": "12. Detalle de producto existente  → 200 OK",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/productos/{{crearSilla_id}}",
+              "host": [
+                "{{baseUrl}}/productos/{{crearSilla_id}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "13. Detalle de id inexistente  → 404 Not Found (RN-04)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/productos/{{idInexistente}}",
+              "host": [
+                "{{baseUrl}}/productos/{{idInexistente}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 404\", () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "14. id inválido (0)  → 422",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/productos/0",
+              "host": [
+                "{{baseUrl}}/productos/0"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 422\", () => pm.response.to.have.status(422));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "PUT /productos/{id}  ·  Actualización total",
+      "item": [
+        {
+          "name": "15. Actualizar producto existente (stock por debajo del mínimo)  → 200 OK",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/productos/{{crearSilla_id}}",
+              "host": [
+                "{{baseUrl}}/productos/{{crearSilla_id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"{{crearSilla_nombre}}\",\n  \"categoria\": \"MUE-01\",\n  \"precio\": 299.99,\n  \"stock\": 2,\n  \"stock_minimo\": 5,\n  \"activo\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "16. Renombrar el producto 2 con el nombre del 1  → 409 Conflict (HU-02)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/productos/{{crearMesa_id}}",
+              "host": [
+                "{{baseUrl}}/productos/{{crearMesa_id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"{{crearSilla_nombre}}\",\n  \"categoria\": \"MUE-01\",\n  \"precio\": 0,\n  \"stock\": 3,\n  \"stock_minimo\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 409\", () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "17. Actualizar id inexistente  → 404 (RN-04)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/productos/{{idInexistente}}",
+              "host": [
+                "{{baseUrl}}/productos/{{idInexistente}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"No existe\",\n  \"categoria\": \"MUE-01\",\n  \"precio\": 10,\n  \"stock\": 1,\n  \"stock_minimo\": 0\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 404\", () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "18. Actualizar con body inválido (precio negativo)  → 422",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/productos/{{crearSilla_id}}",
+              "host": [
+                "{{baseUrl}}/productos/{{crearSilla_id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"{{crearSilla_nombre}}\",\n  \"categoria\": \"MUE-01\",\n  \"precio\": -1,\n  \"stock\": 2,\n  \"stock_minimo\": 5\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 422\", () => pm.response.to.have.status(422));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "GET /productos/{id}/stock  ·  Regla de negocio de stock",
+      "item": [
+        {
+          "name": "19. Consultar stock (tras el PUT 15: stock 2 < mínimo 5)  → 200, \"bajo_stock_minimo\": true",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/productos/{{crearSilla_id}}/stock",
+              "host": [
+                "{{baseUrl}}/productos/{{crearSilla_id}}/stock"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "20. Stock de id inexistente  → 404 (RN-04)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/productos/{{idInexistente}}/stock",
+              "host": [
+                "{{baseUrl}}/productos/{{idInexistente}}/stock"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 404\", () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "PUT /productos/{id}/desactivar  ·  Borrado lógico",
+      "item": [
+        {
+          "name": "21. Desactivar producto existente  → 200 OK, \"activo\": false",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/productos/{{crearMesa_id}}/desactivar",
+              "host": [
+                "{{baseUrl}}/productos/{{crearMesa_id}}/desactivar"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "22. Verificar que sigue en la base, desactivado  → 200, \"activo\": false",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/productos/{{crearMesa_id}}",
+              "host": [
+                "{{baseUrl}}/productos/{{crearMesa_id}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "23. Desactivar id inexistente  → 404 (RN-04)",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/productos/{{idInexistente}}/desactivar",
+              "host": [
+                "{{baseUrl}}/productos/{{idInexistente}}/desactivar"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 404\", () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://127.0.0.1:8000"
+    },
+    {
+      "key": "idInexistente",
+      "value": "999999"
+    },
+    {
+      "key": "crearSilla_id",
+      "value": ""
+    },
+    {
+      "key": "crearSilla_nombre",
+      "value": ""
+    },
+    {
+      "key": "crearMesa_id",
+      "value": ""
+    },
+    {
+      "key": "crearMesa_nombre",
+      "value": ""
+    }
+  ]
+}
