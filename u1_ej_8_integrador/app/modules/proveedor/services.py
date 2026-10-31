@@ -36,9 +36,7 @@ def obtener_por_id(id: int, session: Session) -> ProveedorRead | None:
     return hero
 
 def actualizar_total(id: int, data: ProveedorRead, session : Session) -> Optional[ProveedorRead]:
-    proveedor = session.get(Proveedor, id)
-    if proveedor is None:
-        raise ValueError("Proveedor no encontrado")
+    proveedor = obtener_por_id(id, session)
     update_data = data.model_dump(exclude_unset=True)
     for field, value in update_data.items():
         setattr(proveedor, field, value)
@@ -49,11 +47,7 @@ def actualizar_total(id: int, data: ProveedorRead, session : Session) -> Optiona
     return proveedor
     
 def desactivar(id: int, session: Session) -> Optional[ProveedorRead]:
-    proveedor = session.get(Proveedor, id)
-    if proveedor is None:
-        raise ValueError("Proveedor no encontrado")
-    if not proveedor.activo:
-        raise ValueError("El proveedor ya está desactivado")
+    proveedor = obtener_por_id(id, session)
     proveedor.activo = False
     session.add(proveedor)
     session.commit()

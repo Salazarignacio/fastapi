@@ -1,8 +1,10 @@
 from pydantic import BaseModel, Field
 from typing import Optional
 
+from sqlmodel import SQLModel
 
-class ProductoBase(BaseModel):
+
+class ProductoBase(SQLModel):
     nombre: str = Field(..., example="Silla de Oficina")
     categoria: str = Field(..., pattern=r"^[A-Z]{3}-\d{2}$", example="MUE-01")
     precio: float = Field(gt=0, example=150.50)
@@ -15,7 +17,7 @@ class ProductoCreate(ProductoBase):
     pass  # Exige todos los campos obligatorios de Base
 
 
-class ProductoUpdate(BaseModel):
+class ProductoUpdate(SQLModel):
     # Opcional: Se usa si en el futuro se implementa PATCH (actualización parcial)
     nombre: Optional[str] = None
     categoria: Optional[str] = Field(None, pattern=r"^[A-Z]{3}-\d{2}$")
@@ -29,7 +31,7 @@ class ProductoRead(ProductoBase):
     id: int  # Contrato de salida: siempre incluye el ID generado
 
 
-class ProductoStockResponse(BaseModel):
+class ProductoStockResponse(SQLModel):
     stock: int
     bajo_stock_minimo: bool
     activo: bool

@@ -1,6 +1,5 @@
 from typing import Optional
 from sqlmodel import SQLModel, Field
-
 from .schemas import ProveedorBase
 
 class Proveedor(ProveedorBase, table=True):
