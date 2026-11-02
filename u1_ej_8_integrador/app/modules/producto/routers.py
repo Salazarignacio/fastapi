@@ -15,7 +15,12 @@ router = APIRouter(prefix="/productos", tags=["Productos"])
     "/", response_model=schemas.ProductoRead, status_code=status.HTTP_201_CREATED
 )
 def alta_producto(producto: schemas.ProductoCreate, session=Depends(get_session)):
-    return services.crear(producto, session)
+    try:
+        return services.crear(producto, session)
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Producto ya existe"
+        )
 
 
 # (Extra) LISTAR PRODUCTOS
