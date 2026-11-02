@@ -9,7 +9,7 @@ def crear(data: ProductoCreate, session: Session) -> ProductoRead:
     nuevo = Producto(**data.model_dump())
     producto = select(Producto).where(Producto.nombre == data.nombre)
     if session.exec(producto).first():
-        raise ValueError("Producto ya existe")
+        return None
     session.add(nuevo)
     session.commit()
     session.refresh(nuevo)
