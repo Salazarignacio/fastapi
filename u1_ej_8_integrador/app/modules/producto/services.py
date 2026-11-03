@@ -7,14 +7,16 @@ from .schemas import ProductoCreate, ProductoRead
 
 def crear(data: ProductoCreate, session: Session) -> ProductoRead:
     nuevo = Producto(**data.model_dump())
-    producto = select(Producto).where(Producto.nombre == data.nombre)
-    if session.exec(producto).first():
+    if obtener_nombre(data.nombre, session):
         raise ValueError("Ya existe un producto con ese nombre")
     session.add(nuevo)
     session.commit()
     session.refresh(nuevo)
     return nuevo
 
+def obtener_nombre(nombre: str, session: Session) -> Optional[ProductoRead]:
+    producto = select(Producto).where(Producto.nombre == nombre)
+    return session.exec(producto).first()
 
 def obtener_todos(skip: int, limit: int, session: Session) -> List[ProductoRead]:
     query = select(Producto)
@@ -29,6 +31,8 @@ def actualizar_total(id: int, data: ProductoCreate, session: Session) -> Optiona
     producto = obtener_por_id(id, session)  
     if producto is None:
         return None
+    if obtener_nombre(data.nombre, session):
+        raise ValueError("Ya existe un producto con ese nombre")
     update_data = data.model_dump(exclude_unset=True)
     for field, value in update_data.items():
         setattr(producto, field, value)
