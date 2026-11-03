@@ -19,10 +19,7 @@ def create_app() -> FastAPI:
 
 app = create_app()
 
-"""1) En categoria/routers.py importás Session desde la librería requests (HTTP) en vez de sqlmodel, 
-un error de tipeo que muestra que el código no se probó con cuidado. 
-
-2) La validación de nombre/código duplicado, que implementaste en los tres módulos, no funciona en ninguno: 
+"""2) La validación de nombre/código duplicado, que implementaste en los tres módulos, no funciona en ninguno: 
 en producto, crear devuelve None en vez de levantar una excepción (el except ValueError del router nunca 
 se dispara); en categoría no hay ningún chequeo de duplicados; y en proveedor, existe_codigo sigue 
 comparando contra una lista en memoria que nunca se llena (db_proveedores = []) y encima el router le 
