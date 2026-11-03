@@ -6,17 +6,18 @@ from .models import Proveedor
 
 def crear(data: ProveedorCreate, session: Session) -> ProveedorRead:
     nuevo = Proveedor(**data.model_dump())
+    codigo_proveedor = select(Proveedor).where(Proveedor.codigo == data.codigo)
+    razon_social_proveedor = select(Proveedor).where(Proveedor.razon_social == data.razon_social)
+    if session.exec(codigo_proveedor).first() :
+        raise ValueError("Ya existe un proveedor con ese código")
+    if session.exec(razon_social_proveedor).first() :
+        raise ValueError("Ya existe un proveedor con esa razón social")
     session.add(nuevo)  
     session.commit()
     session.refresh(nuevo)
 
     return nuevo
 
-def existe_codigo(codigo: str, session: Session) -> bool:
-    proveedor = select(Proveedor).where(Proveedor.codigo == codigo)
-    if session.exec(proveedor).first():
-        raise ValueError("Ya existe un proveedor con ese código")
-    return False
 
 def obtener_todos(skip: int, limit: int, activo: bool | None, session: Session) -> list[ProveedorRead]:
     proveedores_elegidos = select(Proveedor)

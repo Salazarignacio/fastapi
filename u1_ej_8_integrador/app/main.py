@@ -19,11 +19,6 @@ def create_app() -> FastAPI:
 
 app = create_app()
 
-"""2) La validación de nombre/código duplicado, que implementaste en los tres módulos, no funciona en ninguno: 
-en producto, crear devuelve None en vez de levantar una excepción (el except ValueError del router nunca 
-se dispara); en categoría no hay ningún chequeo de duplicados; y en proveedor, existe_codigo sigue 
-comparando contra una lista en memoria que nunca se llena (db_proveedores = []) y encima el router le 
-pasa la sesión de base de datos en el parámetro que espera un ID a excluir. 
-
+"""
 3) Quedan restos de código de una versión anterior sin base de datos (db_categorias, db_proveedores, id_counter) 
 que ya no se usan y conviene borrar """
