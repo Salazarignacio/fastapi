@@ -6,17 +6,17 @@ from .models import Proveedor
 
 def crear(data: ProveedorCreate, session: Session) -> ProveedorRead:
     nuevo = Proveedor(**data.model_dump())
-    codigo_proveedor = select(Proveedor).where(Proveedor.codigo == data.codigo)
-    razon_social_proveedor = select(Proveedor).where(Proveedor.razon_social == data.razon_social)
-    if session.exec(codigo_proveedor).first() :
+    if obtener_por_codigo(data.codigo, session):
         raise ValueError("Ya existe un proveedor con ese código")
-    if session.exec(razon_social_proveedor).first() :
-        raise ValueError("Ya existe un proveedor con esa razón social")
     session.add(nuevo)  
     session.commit()
     session.refresh(nuevo)
 
     return nuevo
+
+def obtener_por_codigo(codigo: str, session: Session) -> Optional[ProveedorRead]:
+    proveedor = select(Proveedor).where(Proveedor.codigo == codigo)
+    return session.exec(proveedor).first()
 
 
 def obtener_todos(skip: int, limit: int, activo: bool | None, session: Session) -> list[ProveedorRead]:
@@ -36,6 +36,8 @@ def obtener_por_id(id: int, session: Session) -> ProveedorRead | None:
 
 def actualizar_total(id: int, data: ProveedorRead, session : Session) -> Optional[ProveedorRead]:
     proveedor = obtener_por_id(id, session)
+    if obtener_por_codigo(data.codigo, session):
+        raise ValueError("Ya existe un proveedor con ese código")
     update_data = data.model_dump(exclude_unset=True)
     for field, value in update_data.items():
         setattr(proveedor, field, value)
