@@ -13,7 +13,12 @@ router = APIRouter(prefix="/categorias", tags=["Categorías"])
     "/", response_model=schemas.CategoriaRead, status_code=status.HTTP_201_CREATED
 )
 def alta_categoria(categoria: schemas.CategoriaCreate, session: Session = Depends(get_session)):
-    return services.crear(categoria, session)
+    try:
+        return services.crear(categoria, session)
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_409_BAD_REQUEST, detail="Categoría ya existe"
+        )
 
 
 @router.get(

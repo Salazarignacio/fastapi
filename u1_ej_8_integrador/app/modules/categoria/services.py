@@ -16,6 +16,9 @@ id_counter = 3
 def crear(data: CategoriaCreate, session: Session) -> CategoriaRead:
     
     nueva = Categoria(**data.model_dump())
+    categoria = select(Categoria).where(Categoria.codigo == data.codigo)
+    if session.exec(categoria).first():
+            raise ValueError("Ya existe una categoría con ese código")
     session.add(nueva)
     session.commit()
     session.refresh(nueva)

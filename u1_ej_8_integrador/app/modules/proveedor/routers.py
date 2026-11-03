@@ -12,12 +12,12 @@ router = APIRouter(prefix="/proveedores", tags=["Proveedores"])
     "/", response_model=schemas.ProveedorRead, status_code=status.HTTP_201_CREATED
 )
 def alta_proveedor(proveedor: schemas.ProveedorCreate, session: Session = Depends(get_session)):
-    if services.existe_codigo(proveedor.codigo, session):
+    try:
+        return services.crear(proveedor, session)
+    except ValueError as e:
         raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail=f"Ya existe un proveedor con el código {proveedor.codigo}",
+            status_code=status.HTTP_409_BAD_REQUEST, detail=str(e)
         )
-    return services.crear(proveedor, session)
 
 
 @router.get(
@@ -46,11 +46,7 @@ def actualizar_proveedor(proveedor: schemas.ProveedorCreate, id: int = Path(...,
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Proveedor no encontrado"
         )
-    if services.existe_codigo(proveedor.codigo, excluir_id=id):
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail=f"Ya existe un proveedor con el código {proveedor.codigo}",
-        )
+   
     return services.actualizar_total(id, proveedor, session)
 
 @router.put("/{id}/desactivar", response_model=schemas.ProveedorRead, status_code=status.HTTP_200_OK)

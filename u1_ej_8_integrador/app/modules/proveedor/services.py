@@ -4,11 +4,6 @@ from typing import Optional
 from app.database import get_session
 from .models import Proveedor
 
-
-
-db_proveedores: list[ProveedorRead] = []
-id_counter = 1
-
 def crear(data: ProveedorCreate, session: Session) -> ProveedorRead:
     nuevo = Proveedor(**data.model_dump())
     session.add(nuevo)  
@@ -17,8 +12,11 @@ def crear(data: ProveedorCreate, session: Session) -> ProveedorRead:
 
     return nuevo
 
-def existe_codigo(codigo: str, excluir_id: int | None = None) -> bool:
-    return any(p.codigo == codigo and p.id != excluir_id for p in db_proveedores)
+def existe_codigo(codigo: str, session: Session) -> bool:
+    proveedor = select(Proveedor).where(Proveedor.codigo == codigo)
+    if session.exec(proveedor).first():
+        raise ValueError("Ya existe un proveedor con ese código")
+    return False
 
 def obtener_todos(skip: int, limit: int, activo: bool | None, session: Session) -> list[ProveedorRead]:
     proveedores_elegidos = select(Proveedor)

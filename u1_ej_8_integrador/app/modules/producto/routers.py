@@ -19,7 +19,7 @@ def alta_producto(producto: schemas.ProductoCreate, session=Depends(get_session)
         return services.crear(producto, session)
     except ValueError:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Producto ya existe"
+            status_code=status.HTTP_409_BAD_REQUEST, detail="Producto ya existe"
         )
 
 
